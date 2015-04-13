@@ -1,0 +1,4 @@
+#!/bin/bash
+inotifywait --quiet -e modify,delete,attrib $PWD -r --exclude '/\.[^/]*'
+bundle exec rake -s
+exec "$0"

@@ -1,0 +1,51 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+=begin
+Ascend the current directory until you find $root_marker
+© Petr Skočík, 2015 
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <http://www.gnu.org/licenses/>.
+=end
+
+require 'shellwords'
+require 'pathname'
+
+$root_marker = ARGV[0] || ".git"
+$cross_filesystems = ARGV[1] || false
+$show_relative = ( ARGV[2].nil? && true ) || ARGV[2]
+
+dir = Pathname.pwd
+
+unless $cross_filesystems
+  child = dir
+end
+
+class BoundaryCrossedError < RuntimeError
+end
+begin
+  root = dir.ascend do |cdir|
+    unless $cross_filesystems
+      if cdir.stat.dev != child.stat.dev
+        raise BoundaryCrossedError, "BoundaryCrossedError: File system boundary reached at #{Shellwords.escape(child)}"
+      end
+      child = cdir
+    end
+    break cdir if cdir.join($root_marker).exist?
+  end
+  puts root.relative_path_from(Pathname.pwd)
+  exit 0
+rescue BoundaryCrossedError => boundary_error
+  warn boundary_error
+  exit 1
+end

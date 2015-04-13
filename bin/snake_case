@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+# -*- coding: utf-8 -*-
+
+#Read input from params or stding
+#Snake_case each item
+
+require 'core_ext/string/import'
+
+input = ARGV.empty? ? STDIN.lazy.map(&:chomp) : ARGV
+
+input.each do |item|
+  puts item.snakecase
+end
+
+
+
